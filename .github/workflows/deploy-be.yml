@@ -1,0 +1,84 @@
+name: Deploy backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'BE/**'
+      - '.github/workflows/deploy-be.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-be
+  cancel-in-progress: true
+
+jobs:
+  # 1) Validate the build on a clean GH runner BEFORE touching prod.
+  #    Catches TS / dep / lint errors so a broken commit never reaches EC2.
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: BE
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: BE/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
+      # Uncomment when tests exist:
+      # - run: yarn test --passWithNoTests
+
+  # 2) SSH into EC2, sync .env from BE_ENV secret, deploy, then verify
+  #    /healthcheck responds. If the new process can't start, the workflow fails
+  #    loudly instead of silently leaving prod broken.
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync env, deploy, health check
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          BE_ENV: ${{ secrets.BE_ENV }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: BE_ENV
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            cd ~/app
+            git fetch --all --prune
+            git reset --hard origin/main
+
+            cd BE
+
+            # Write .env from the BE_ENV GitHub Secret on every deploy.
+            # Adding/changing an env var = update the secret in GitHub UI; no SSH needed.
+            printf '%s\n' "$BE_ENV" > .env
+            chmod 600 .env
+
+            yarn deploy:server
+            pm2 save
+
+            # Health check: poll /healthcheck on the local port until it responds 200,
+            # or fail the workflow after ~60s. This catches crash-on-boot bugs
+            # (missing env, bad migration, etc.) that pm2 would otherwise silently retry.
+            echo "Waiting for /healthcheck to respond..."
+            for i in $(seq 1 15); do
+              if curl -fsS --max-time 3 http://127.0.0.1:3000/healthcheck > /dev/null; then
+                echo "Healthcheck passed (attempt $i)"
+                exit 0
+              fi
+              echo "Attempt $i not ready, retrying in 4s..."
+              sleep 4
+            done
+
+            echo "::error::Healthcheck failed after 60s. Last 50 lines of pm2 logs:"
+            pm2 logs --nostream --lines 50 || true
+            exit 1
