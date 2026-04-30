@@ -149,7 +149,7 @@ export function ExpenseFormDialog({ open, onOpenChange, onSubmit, expense }: Pro
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full space-y-4">
 
             {/* Description */}
             <FormField

@@ -135,59 +135,60 @@ export function ExpensesPage() {
     <div className="space-y-5">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Expenses</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
             Track and manage expenses by user and month
           </p>
         </div>
-        <Button onClick={() => { setEditingExpense(undefined); setFormOpen(true); }} disabled={!effectiveUserId}>
-          <PlusCircle className="h-4 w-4 mr-2" />
-          Add Expense
+        <Button
+          className="self-start sm:self-auto flex-shrink-0 px-2 sm:px-4"
+          onClick={() => { setEditingExpense(undefined); setFormOpen(true); }}
+          disabled={!effectiveUserId}
+        >
+          <PlusCircle className="h-4 w-4 sm:mr-2" />
+          <span className="hidden sm:inline">Add Expense</span>
         </Button>
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {/* Controls */}
-      <div className="flex items-center gap-3 flex-wrap">
-        {/* User selector */}
-        <Select
-          value={effectiveUserId ?? ''}
-          onValueChange={(v) => { if (v) setSelectedUserId(v); }}
-          disabled={usersLoading}
-        >
-          <SelectTrigger className="w-44">
-            <SelectValue>
-              {(value: string | null) =>
-                users.find((u) => String(u.id) === value)?.name ?? 'Select user'
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {users.map((u) => (
-              <SelectItem key={u.id} value={String(u.id)}>
-                {u.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Month navigator */}
-        <MonthNavigator year={year} month={month} onChange={handleMonthChange} />
-
-        {/* Total pill */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Select
+            value={effectiveUserId ?? ''}
+            onValueChange={(v) => { if (v) setSelectedUserId(v); }}
+            disabled={usersLoading}
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue>
+                {(value: string | null) =>
+                  users.find((u) => String(u.id) === value)?.name ?? 'Select user'
+                }
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {users.map((u) => (
+                <SelectItem key={u.id} value={String(u.id)}>
+                  {u.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <MonthNavigator year={year} month={month} onChange={handleMonthChange} />
+        </div>
         {expenses.length > 0 && (
-          <span className="ml-auto text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground text-right">
             {expenses.length} expense{expenses.length !== 1 ? 's' : ''} ·{' '}
             <span className="font-medium text-foreground">{formatAmount(totalAmount)}</span>
-          </span>
+          </p>
         )}
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>

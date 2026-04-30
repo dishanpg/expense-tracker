@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Receipt, Users, TrendingUp, Sun, Moon, Monitor } from 'lucide-react';
+import { LayoutDashboard, Receipt, Users, TrendingUp, Sun, Moon, Monitor, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -52,44 +54,77 @@ function ThemeToggle() {
   );
 }
 
+function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  return (
+    <nav className="flex-1 space-y-1 p-3">
+      {navItems.map(({ to, label, icon: Icon, end }) => (
+        <NavLink
+          key={to}
+          to={to}
+          end={end}
+          onClick={onNavigate}
+          className={({ isActive }) =>
+            cn(
+              'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
+              isActive
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                : 'text-sidebar-foreground hover:bg-sidebar-accent/50',
+            )
+          }
+        >
+          <Icon className="h-4 w-4" />
+          {label}
+        </NavLink>
+      ))}
+    </nav>
+  );
+}
+
 export function AppLayout() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Sidebar */}
+      {/* Desktop sidebar */}
       <aside className="hidden md:flex w-56 flex-col border-r bg-sidebar">
         <div className="flex h-14 items-center px-4">
           <span className="font-semibold text-sm tracking-tight">Expense Tracker</span>
         </div>
         <Separator />
-        <nav className="flex-1 space-y-1 p-3">
-          {navItems.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
-                  isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent/50',
-                )
-              }
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </NavLink>
-          ))}
-        </nav>
+        <NavLinks />
       </aside>
 
+      {/* Mobile drawer */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="w-56 p-0 bg-sidebar">
+          <SheetHeader className="flex h-14 justify-center px-4">
+            <SheetTitle className="text-sm font-semibold tracking-tight text-left">
+              Expense Tracker
+            </SheetTitle>
+          </SheetHeader>
+          <Separator />
+          <NavLinks onNavigate={() => setMobileOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
       {/* Main content */}
-      <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b px-6">
-          <span className="text-sm text-muted-foreground">Personal Finance Dashboard</span>
+      <div className="flex flex-1 flex-col min-w-0">
+        <header className="flex h-14 items-center justify-between border-b px-4">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setMobileOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <span className="text-sm text-muted-foreground">Personal Finance Dashboard</span>
+          </div>
           <ThemeToggle />
         </header>
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
       </div>

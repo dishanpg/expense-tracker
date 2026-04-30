@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PlusCircle } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -13,8 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { ExpenseFormDialog, type ExpenseFormPayload } from '@/components/expenses/ExpenseFormDialog';
+import { expensesApi } from '@/api/expenses';
 import { useUsers } from '@/hooks/useUsers';
 import { useLastMonthsSummary } from '@/hooks/useLastMonthsSummary';
 import { useMonthlySummary } from '@/hooks/useMonthlySummary';
@@ -179,8 +183,8 @@ export function DashboardPage() {
   const effectiveUserId = selectedUserId ?? (users[0] ? String(users[0].id) : null);
   const userId = effectiveUserId ? Number(effectiveUserId) : null;
 
-  const { data, loading, error } = useLastMonthsSummary(userId, 6, currentYear, currentMonth);
-  const { summary: currentSummary, loading: currentLoading } = useMonthlySummary(userId, currentYear, currentMonth);
+  const { data, loading, error, refetch: refetchChart } = useLastMonthsSummary(userId, 6, currentYear, currentMonth);
+  const { summary: currentSummary, loading: currentLoading, refetch: refetchSummary } = useMonthlySummary(userId, currentYear, currentMonth);
 
   const peakMonth = data?.peakMonth ?? null;
   const topCategories = data?.peakMonthTopCategories ?? [];
@@ -191,35 +195,54 @@ export function DashboardPage() {
     ? currentSummary.totalAmount / currentSummary.totalCount
     : 0;
 
+  const [formOpen, setFormOpen] = useState(false);
+
+  const handleAdd = async (payload: ExpenseFormPayload) => {
+    if (!userId) return;
+    await expensesApi.create({ ...payload, userId });
+    await Promise.all([refetchChart(), refetchSummary()]);
+  };
+
   return (
     <div className="space-y-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Last 6 months at a glance</p>
         </div>
-        <Select
-          value={effectiveUserId ?? ''}
-          onValueChange={(v) => { if (v) setSelectedUserId(v); }}
-          disabled={usersLoading}
-        >
-          <SelectTrigger className="w-44">
-            <SelectValue>
-              {(value: string | null) =>
-                users.find((u) => String(u.id) === value)?.name ?? 'Select user'
-              }
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {users.map((u) => (
-              <SelectItem key={u.id} value={String(u.id)}>
-                {u.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setFormOpen(true)}
+            disabled={!effectiveUserId}
+            size="sm"
+            className="flex-shrink-0 px-2 sm:px-3"
+          >
+            <PlusCircle className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Add Expense</span>
+          </Button>
+          <Select
+            value={effectiveUserId ?? ''}
+            onValueChange={(v) => { if (v) setSelectedUserId(v); }}
+            disabled={usersLoading}
+          >
+            <SelectTrigger className="w-44 min-w-0">
+              <SelectValue>
+                {(value: string | null) =>
+                  users.find((u) => String(u.id) === value)?.name ?? 'Select user'
+                }
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {users.map((u) => (
+                <SelectItem key={u.id} value={String(u.id)}>
+                  {u.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -260,7 +283,8 @@ export function DashboardPage() {
             ) : !currentSummary || currentSummary.totalCount === 0 ? (
               <p className="text-sm text-muted-foreground">No expenses recorded this month yet.</p>
             ) : (
-              <div className="grid grid-cols-2 gap-6 divide-x">
+              <div className="overflow-x-auto">
+              <div className="grid grid-cols-2 gap-6 divide-x min-w-[340px]">
                 <div className="space-y-4">
                   <div>
                     <p className="text-3xl font-semibold tabular-nums">{formatAmount(currentSummary.totalAmount)}</p>
@@ -285,6 +309,7 @@ export function DashboardPage() {
                     ))}
                   </div>
                 </div>
+              </div>
               </div>
             )}
           </CardContent>
@@ -316,7 +341,8 @@ export function DashboardPage() {
             ) : !hasData ? (
               <p className="text-sm text-muted-foreground">No expenses in the last 6 months.</p>
             ) : (
-              <div className="grid grid-cols-2 gap-6 divide-x">
+              <div className="overflow-x-auto">
+              <div className="grid grid-cols-2 gap-6 divide-x min-w-[340px]">
                 <div className="space-y-4">
                   <div>
                     <p className="text-3xl font-semibold tabular-nums">{formatAmount(peakMonth!.totalAmount)}</p>
@@ -352,11 +378,18 @@ export function DashboardPage() {
                   )}
                 </div>
               </div>
+              </div>
             )}
           </CardContent>
         </Card>
 
       </div>
+
+      <ExpenseFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        onSubmit={handleAdd}
+      />
 
     </div>
   );
