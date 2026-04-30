@@ -56,7 +56,10 @@ const schema = z.object({
       message: 'Amount must be at least 0.01',
     }),
   category: z.enum(CATEGORY_VALUES, { error: 'Category is required' }),
-  dateOfExpense: z.string().min(1, 'Date is required'),
+  dateOfExpense: z.string().min(1, 'Date is required').refine(
+    (v) => v <= localDateString(),
+    { message: 'Date cannot be in the future' },
+  ),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -75,6 +78,11 @@ interface Props {
   expense?: Expense; // if provided → edit mode
 }
 
+function localDateString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export function ExpenseFormDialog({ open, onOpenChange, onSubmit, expense }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const isEdit = !!expense;
@@ -85,7 +93,7 @@ export function ExpenseFormDialog({ open, onOpenChange, onSubmit, expense }: Pro
       description: '',
       amount: '',
       category: '' as ExpenseCategory,
-      dateOfExpense: new Date().toISOString().split('T')[0],
+      dateOfExpense: localDateString(),
     },
   });
 
@@ -103,7 +111,7 @@ export function ExpenseFormDialog({ open, onOpenChange, onSubmit, expense }: Pro
         description: '',
         amount: '',
         category: '' as ExpenseCategory,
-        dateOfExpense: new Date().toISOString().split('T')[0],
+        dateOfExpense: localDateString(),
       });
     }
   }, [expense, form]);
@@ -212,7 +220,7 @@ export function ExpenseFormDialog({ open, onOpenChange, onSubmit, expense }: Pro
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Date <span className="text-destructive">*</span></FormLabel>
-                  <Input type="date" {...field} />
+                  <Input type="date" max={localDateString()} {...field} />
                   <FormMessage />
                 </FormItem>
               )}
