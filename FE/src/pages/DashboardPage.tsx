@@ -66,6 +66,12 @@ function formatAmount(amount: number) {
   }).format(amount);
 }
 
+function formatAmountCompact(amount: number) {
+  if (amount >= 100000) return `₹${(amount / 100000).toFixed(1)}L`;
+  if (amount >= 1000) return `₹${(amount / 1000).toFixed(1)}K`;
+  return `₹${Math.round(amount)}`;
+}
+
 function monthLabel(year: number, month: number) {
   return `${MONTH_NAMES[month - 1]} '${String(year).slice(2)}`;
 }
@@ -100,6 +106,11 @@ function BarChart({
                 className="w-full flex flex-col items-center justify-end cursor-default"
                 style={{ flex: 1 }}
               >
+                {s.totalAmount > 0 && (
+                  <span className="sm:hidden text-[9px] leading-none tabular-nums mb-1 text-muted-foreground">
+                    {formatAmountCompact(s.totalAmount)}
+                  </span>
+                )}
                 <div
                   className="w-full rounded-t-md transition-all duration-300"
                   style={{
