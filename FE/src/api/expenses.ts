@@ -22,8 +22,8 @@ export const expensesApi = {
       month,
     }),
 
-  getLastMonthsSummary: (userId: number, months: number) =>
-    api.post<LastMonthsSummary>('/v1/api/expenses/last-months-summary', { userId, months }),
+  getLastMonthsSummary: (userId: number, months: number, currentYear: number, currentMonth: number) =>
+    api.post<LastMonthsSummary>('/v1/api/expenses/last-months-summary', { userId, months, currentYear, currentMonth }),
 
   getOne: (id: number) => api.get<Expense>(`/v1/api/expenses/${id}`),
 

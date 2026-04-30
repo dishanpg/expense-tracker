@@ -17,4 +17,16 @@ export class GetLastMonthsSummaryDto {
   @Min(1)
   @Max(24)
   months: number;
+
+  @ApiProperty({ description: "Current year in caller's local timezone", example: 2026 })
+  @IsInt()
+  @Min(2000)
+  @Max(2100)
+  currentYear: number;
+
+  @ApiProperty({ description: "Current month (1–12) in caller's local timezone", example: 5 })
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  currentMonth: number;
 }

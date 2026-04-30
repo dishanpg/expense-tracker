@@ -179,7 +179,7 @@ export function DashboardPage() {
   const effectiveUserId = selectedUserId ?? (users[0] ? String(users[0].id) : null);
   const userId = effectiveUserId ? Number(effectiveUserId) : null;
 
-  const { data, loading, error } = useLastMonthsSummary(userId, 6);
+  const { data, loading, error } = useLastMonthsSummary(userId, 6, currentYear, currentMonth);
   const { summary: currentSummary, loading: currentLoading } = useMonthlySummary(userId, currentYear, currentMonth);
 
   const peakMonth = data?.peakMonth ?? null;

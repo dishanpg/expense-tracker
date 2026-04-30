@@ -134,13 +134,9 @@ export class ExpenseService {
   async getLastMonthsSummary(
     dto: GetLastMonthsSummaryDto,
   ): Promise<LastMonthsSummaryDto> {
-    const { userId, months } = dto;
+    const { userId, months, currentYear, currentMonth } = dto;
 
     await this.userService.findOne(userId);
-
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
 
     // Build list of (year, month) pairs from oldest to newest
     const periods: { year: number; month: number }[] = [];
