@@ -12,7 +12,7 @@ import {
 import { useTheme } from '@/hooks/useTheme';
 
 const navItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/expenses', label: 'Expenses', icon: Receipt },
   { to: '/summary', label: 'Summary', icon: TrendingUp },
   { to: '/users', label: 'Users', icon: Users },

@@ -1,3 +1,4 @@
+import * as fs from "fs";
 import { ConfigService } from "@nestjs/config";
 import { TypeOrmModuleAsyncOptions } from "@nestjs/typeorm";
 
@@ -9,14 +10,11 @@ export const DatabaseConfig: TypeOrmModuleAsyncOptions = {
     username: configService.get("DB_USERNAME", "db_user"),
     password: configService.get("DB_PASSWORD", "db_password"),
     database: configService.get("DB_NAME", "db_name"),
-    ssl:
-      configService.get("DB_SSL") === "true"
-        ? { minVersion: "TLSv1.2", rejectUnauthorized: true }
-        : undefined,
+    ssl: { ca: fs.readFileSync(configService.get("DB_SSL_CA", "/path/to/ca.pem")) },
     synchronize: false,
-    logging: configService.get("NODE_ENV") !== "production",
+    logging: true,
     autoLoadEntities: true,
-    migrationsRun: true,
+    migrationsRun: false,
     migrations: [__dirname + "/../migrations/*{.ts,.js}"],
   }),
   inject: [ConfigService],
