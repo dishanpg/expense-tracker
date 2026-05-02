@@ -39,12 +39,14 @@ const CATEGORIES: { value: ExpenseCategory; label: string }[] = [
   { value: 'sports', label: 'Sports' },
   { value: 'investments', label: 'Investments' },
   { value: 'internet', label: 'Internet' },
+  { value: 'entertainment', label: 'Entertainment' },
+  { value: 'credit-card', label: 'Credit Card' },
   { value: 'other', label: 'Other' },
 ];
 
 const CATEGORY_VALUES = [
   'foodoutside', 'grocery', 'movie', 'travel', 'housing', 'cab',
-  'shopping', 'medical', 'sports', 'investments', 'internet', 'other',
+  'shopping', 'medical', 'sports', 'investments', 'internet', 'entertainment', 'credit-card', 'other',
 ] as const;
 
 const schema = z.object({

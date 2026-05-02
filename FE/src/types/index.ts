@@ -10,6 +10,8 @@ export type ExpenseCategory =
   | 'sports'
   | 'investments'
   | 'internet'
+  | 'entertainment'
+  | 'credit-card'
   | 'other';
 
 export interface User {

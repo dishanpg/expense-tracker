@@ -19,6 +19,8 @@ export enum ExpenseCategory {
   SPORTS = "sports",
   INVESTMENTS = "investments",
   INTERNET = "internet",
+  ENTERTAINMENT = "entertainment",
+  CREDITCARD = "credit-card",
   OTHER = "other",
 }
 

@@ -33,6 +33,8 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   sports: 'Sports',
   investments: 'Investments',
   internet: 'Internet',
+  entertainment: 'Entertainment',
+  'credit-card': 'Credit Card',
   other: 'Other',
 };
 
@@ -48,6 +50,8 @@ const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
   sports: 'bg-lime-500',
   investments: 'bg-indigo-500',
   internet: 'bg-sky-500',
+  entertainment: 'bg-rose-500',
+  'credit-card': 'bg-violet-500',
   other: 'bg-gray-400',
 };
 
@@ -63,6 +67,8 @@ const CATEGORY_BG: Record<ExpenseCategory, string> = {
   sports: 'bg-lime-100 text-lime-700',
   investments: 'bg-indigo-100 text-indigo-700',
   internet: 'bg-sky-100 text-sky-700',
+  entertainment: 'bg-rose-100 text-rose-700',
+  'credit-card': 'bg-violet-100 text-violet-700',
   other: 'bg-gray-100 text-gray-600',
 };
 
